@@ -5,6 +5,7 @@ import chalk from 'chalk';
 const UA =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'; // headers uwu
 
+// config
 const MAX_WAIT = 99_000;
 const POLL = 20;
 const HB = 30_000;
