@@ -40,16 +40,16 @@ const scrape = (html) => {
   if (sm) { d.vs = sm[1]; log('scrape', `session: ${d.vs}`); }
 
   d.tid =
-    html.match(/p\[['"]TID['"]\]\s*=\s*(\d+)/)?.[1] ??
-    html.match(/conf_rew\s*=\s*\{[\s\S]*?\bcd:\s*(\d+)/)?.[1];
+    html.match(/p\[['"]TID['"]\]\s*=\s*(\d+)/)?.[1] ?? // for lootlinks
+    html.match(/conf_rew\s*=\s*\{[\s\S]*?\bcd:\s*(\d+)/)?.[1]; // for rapid-links
   if (d.tid) log('scrape', `tid: ${d.tid}`);
 
   d.key =
-    html.match(/p\[['"]KEY['"]\]\s*=\s*['"](\d+)['"]/)?.[1] ??
-    html.match(/\bkey:\s*['"](\d{10,})['"]/)?.[1];
+    html.match(/p\[['"]KEY['"]\]\s*=\s*['"](\d+)['"]/)?.[1] ?? // for lootlinks
+    html.match(/\bkey:\s*['"](\d{10,})['"]/)?.[1]; // for rapid-links
   if (d.key) log('scrape', `key: ${d.key}`);
 
-  const cm = html.match(/p\['CDN_DOMAIN'\]\s*=\s*'([^']+)';/)?.[1];
+  const cm = html.match(/p\['CDN_DOMAIN'\]\s*=\s*'([^']+)';/)?.[1]; // universal (lootlinks & rapid-links)
   if (cm) { d.cdn = cm; log('scrape', `cdn: ${cm}`); }
 
 
