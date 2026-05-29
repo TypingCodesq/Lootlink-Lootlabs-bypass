@@ -39,25 +39,15 @@ const scrape = (html) => {
   if (sm) { d.vs = sm[1]; log('scrape', `session: ${d.vs}`); }
 
   d.tid =
-    html.match(/p\[['"]TID['"]\]\s*=\s*(\d+)/)?.[1] ??
-    html.match(/p\.TID\s*=\s*(\d+)/)?.[1] ??
     html.match(/conf_rew\s*=\s*\{[\s\S]*?\bcd:\s*(\d+)/)?.[1];
   if (d.tid) log('scrape', `tid: ${d.tid}`);
 
   d.key =
-    html.match(/p\[['"]KEY['"]\]\s*=\s*['"](\d+)['"]/)?.[1] ??
-    html.match(/p\.KEY\s*=\s*['"](\d+)['"]/)?.[1] ??
-    html.match(/conf_rew\s*=\s*\{[\s\S]*?\bkey:\s*['"](\d+)['"]/)?.[1] ??
     html.match(/\bkey:\s*['"](\d{10,})['"]/)?.[1];
   if (d.key) log('scrape', `key: ${d.key}`);
 
   const cm = html.match(/p\['CDN_DOMAIN'\]\s*=\s*'([^']+)';/)?.[1];
   if (cm) { d.cdn = cm; log('scrape', `cdn: ${cm}`); }
-
-  d.syn =
-    html.match(/INCENTIVE_SYNCER_DOMAIN\s*=\s*['"]([^'"]+)['"]/)?.[1] ??
-    html.match(/p\['INCENTIVE_SYNCER_DOMAIN'\]\s*=\s*['"]([^'"]+)['"]/)?.[1];
-  if (d.syn) log('scrape', `syncer: ${d.syn}`);
 
   if (!d.tid || !d.key) log('scrape', chalk.yellow('Incomplete params'), JSON.stringify(d));
   return d;
