@@ -39,15 +39,18 @@ const scrape = (html) => {
   if (sm) { d.vs = sm[1]; log('scrape', `session: ${d.vs}`); }
 
   d.tid =
+    html.match(/p\[['"]TID['"]\]\s*=\s*(\d+)/)?.[1] ??
     html.match(/conf_rew\s*=\s*\{[\s\S]*?\bcd:\s*(\d+)/)?.[1];
   if (d.tid) log('scrape', `tid: ${d.tid}`);
 
   d.key =
+    html.match(/p\[['"]KEY['"]\]\s*=\s*['"](\d+)['"]/)?.[1] ??
     html.match(/\bkey:\s*['"](\d{10,})['"]/)?.[1];
   if (d.key) log('scrape', `key: ${d.key}`);
 
   const cm = html.match(/p\['CDN_DOMAIN'\]\s*=\s*'([^']+)';/)?.[1];
   if (cm) { d.cdn = cm; log('scrape', `cdn: ${cm}`); }
+
 
   if (!d.tid || !d.key) log('scrape', chalk.yellow('Incomplete params'), JSON.stringify(d));
   return d;
@@ -305,7 +308,7 @@ r.go('https://rapid-links.com/s?HiW6incB').then((u) => {
   if (u) console.log(chalk.bgGreen.black('[OUT]'), u);
 });
 
-// example link with lootlink: https://loot-link.com/s?UvQO6IEp&data=BKLXBOPVcyptATUon%2BS6z57I8yM2EmTH4n7aeg656NWWox1unkG5zy9JBKRgaDdt&redirect=javascript:eval(decodeURI(atob(%22bG9jYXRpb24ucmVwbGFjZShsb2NhdGlvbi5vcmlnaW4lMjArJTIwbG9jYXRpb24ucGF0aG5hbWUlMjArJTIwbG9jYXRpb24uc2VhcmNoLnNwbGl0KCcmJyklNUIwJTVEJTIwKyUyMCcmZGF0YT1CS0xYQk9QVmN5cHRBVFVvbiUyNTJCUzZ6NEY5azVJYy8xRXJsdEs0dG82dms0dyUyNTNEJyk7%22)));
+// example link with lootlink: https://links.lootlabs.gg/s?UvQO6IEp&data=BKLXBOPVcyptATUon%2BS6z57I8yM2EmTH4n7aeg656NWWox1unkG5zy9JBKRgaDdt&redirect=javascript:eval(decodeURI(atob(%22bG9jYXRpb24ucmVwbGFjZShsb2NhdGlvbi5vcmlnaW4lMjArJTIwbG9jYXRpb24ucGF0aG5hbWUlMjArJTIwbG9jYXRpb24uc2VhcmNoLnNwbGl0KCcmJyklNUIwJTVEJTIwKyUyMCcmZGF0YT1CS0xYQk9QVmN5cHRBVFVvbiUyNTJCUzZ6NEY5azVJYy8xRXJsdEs0dG82dms0dyUyNTNEJyk7%22)));
 
 // credits to TypingCodesq (https://github.com/TypingCodesq)
 
