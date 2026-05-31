@@ -51,10 +51,10 @@ const scrape = (html) => {
   const cm = html.match(/p\['CDN_DOMAIN'\]\s*=\s*'([^']+)';/)?.[1]; // universal (lootlinks & rapid-links)
   if (cm) { d.cdn = cm; log('scrape', `cdn: ${cm}`); }
 
-
   if (!d.tid || !d.key) log('scrape', chalk.yellow('Incomplete params'), JSON.stringify(d));
   return d;
 };
+
 // nigga
 const xor = (enc, len) => {
   const raw = Buffer.from(fixB64(enc), 'base64').toString('utf-8');
@@ -80,12 +80,16 @@ const tryXor = (raw, label) => {
   return null;
 };
 
-const decode = (raw) => {
+const decode = (raw, t0) => {
   const s = String(raw).trim();
   log('decode', `Payload ${s.length} chars`);
 
   const d = safeDec(s);
-  if (isUrl(d)) { log('decode', chalk.green('ok'), d); return d; }
+  if (isUrl(d)) { 
+    const time = ((Date.now() - t0) / 1000).toFixed(2);
+    console.log(`${d} (${time}s)`);
+    return d; 
+  }
 
   try {
     const p = Buffer.from(fixB64(s), 'base64').toString('utf-8');
@@ -117,21 +121,14 @@ const fire = (uid, tid, t, sid, d, h) => {
   const syn = d.syn || 'nerventualken.com';
   const hd = hdrs(h);
 
-  log('http', `Firing requests sub=${sub}`);
+  log('http', `sub=${sub} <--`);
 
   const reqs = [
     ...(d.vs
       ? [{ url: `https://${h}/verify`, method: 'POST', headers: { ...hd, 'content-type': 'text/plain;charset=UTF-8' }, body: d.vs }]
       : []),
-    { url: `https://${sub}.onsultingco.com/st?uid=${uid}&cat=${tid}`, method: 'POST', headers: hd },
-    { url: `https://2.onsultingco.com/st?uid=${uid}&cat=${tid}`, method: 'POST', headers: hd },
-    { url: `https://enaightdecipie.com/?event=task_clicked&session_id=${sid}&info=1`, method: 'POST', headers: hd },
-    { url: `https://curyrentattrib.info/ptr?i=${uid}`, method: 'GET', headers: hd },
-    { url: `https://enaightdecipie.com/?event=return_to_page&session_id=${sid}&info=1`, method: 'POST', headers: hd },
-    { url: `https://${sub}.onsultingco.com/p?uid=${uid}`, method: 'POST', headers: hd },
-    { url: `https://${syn}/td?ac=auto_complete&urid=${uid}&cat=${tid}&tid=${t}`, method: 'GET', headers: hd },
-    { url: `https://enaightdecipie.com/?event=unlock_content_click&session_id=${sid}`, method: 'POST', headers: hd },
-  ]; // urls
+      { url: `https://${sub}.onsultingco.com/st?uid=${uid}&cat=${tid}`, method: 'POST', headers: hd }
+  ]; // urls,
 
   reqs.forEach(({ url, method, headers, body }) => {
     fetch(url, { method, headers, body, keepalive: true })
@@ -146,7 +143,10 @@ const wsConnect = (uid, tid, t, sid, d, h, st) =>
     const url = `wss://${sub}.onsultingco.com/c?uid=${uid}&cat=${tid},2&key=${d.key}&session_id=${sid}&is_loot=1&tid=${t}`;
     log('ws', `Connecting (${((Date.now() - st) / 1000).toFixed(1)}s)`);
 // ws ekfkedfdm
-    const ws = new WebSocket(url, { headers: hdrs(h) });
+    const ws = new WebSocket(url, { 
+      headers: hdrs(h),
+      handshakeTimeout: 3000,
+    });
     let ok = false;
 
     const end = (v) => {
@@ -154,7 +154,6 @@ const wsConnect = (uid, tid, t, sid, d, h, st) =>
       ok = true;
       clearInterval(ping);
       try { ws.close(); } catch {}
-      log('ws', v ? chalk.green('Got URL') : chalk.red('No URL'));
       done(v);
     };
 
@@ -167,11 +166,10 @@ const wsConnect = (uid, tid, t, sid, d, h, st) =>
       const i = txt.indexOf('r:');
       if (i === -1) return;
       log('ws', chalk.green('Payload received'));
-      end(decode(txt.slice(i + 2)));
+      end(decode(txt.slice(i + 2), st));
     });
 
     ws.on('error', (e) => { log('ws', chalk.red(e.message)); end(null); });
-    ws.on('close', () => log('ws', chalk.dim('Closed')));
   });
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -244,7 +242,6 @@ class Resolver {
     if (!Array.isArray(json) || !json.length) { log('resp', chalk.yellow('Empty array')); return; }
 
     this.busy = true;
-    const t0 = Date.now();
     try {
       const { urid: uid, tier_id: tid = '8', session_id: sid = '' } = json[0];
       log('data', `uid=${uid} tid=${tid} sid=${sid}`);
@@ -262,7 +259,6 @@ class Resolver {
       const final = await wsConnect(uid, tid, t, sid, d, h, this.t0);
       if (final) {
         this.url = final;
-        log('done', chalk.bgGreen.black(`Done ${((Date.now() - t0) / 1000).toFixed(2)}s`), final);
       }
     } finally {
       this.busy = false;
@@ -291,21 +287,22 @@ class Resolver {
       const dl = Date.now() + MAX_WAIT;
       while (!this.url && Date.now() < dl) await wait(POLL);
 
-      log('done', this.url ? chalk.bgGreen.black('SUCCESS') : chalk.red('TIMEOUT'), this.url || '');
       return this.url;
     } catch (e) {
       log('err', chalk.red(e.message));
       return null;
     } finally {
-      if (this.br) { log('clean', 'Closing browser...'); await this.br.close(); }
-      log('time', chalk.cyan(`${((Date.now() - this.t0) / 1000).toFixed(2)}s`));
+      if (this.br) await this.br.close();
     }
   }
 }
 
 const r = new Resolver();
-r.go('https://rapid-links.com/s?HiW6incB').then((u) => {
-  if (u) console.log(chalk.bgGreen.black('[OUT]'), u);
+r.go('https://rapid-links.com/s?HiW6incB'').then((u) => {
+  if (!u) {
+    const time = ((Date.now() - r.t0) / 1000).toFixed(2);
+    console.log(chalk.bgRed.black(`[TIMEOUT] (${time}s)`));
+  }
 }); // nigga
 
 // example link with lootlink: https://links.lootlabs.gg/s?UvQO6IEp&data=BKLXBOPVcyptATUon%2BS6z57I8yM2EmTH4n7aeg656NWWox1unkG5zy9JBKRgaDdt&redirect=javascript:eval(decodeURI(atob(%22bG9jYXRpb24ucmVwbGFjZShsb2NhdGlvbi5vcmlnaW4lMjArJTIwbG9jYXRpb24ucGF0aG5hbWUlMjArJTIwbG9jYXRpb24uc2VhcmNoLnNwbGl0KCcmJyklNUIwJTVEJTIwKyUyMCcmZGF0YT1CS0xYQk9QVmN5cHRBVFVvbiUyNTJCUzZ6NEY5azVJYy8xRXJsdEs0dG82dms0dyUyNTNEJyk7%22)));
