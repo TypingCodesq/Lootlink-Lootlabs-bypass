@@ -15,6 +15,7 @@ time: 60s-70s max, idk
 </div>
 ______________________
 
+modules:
 ```bash
 npm install puppeteer
 npm install ws
