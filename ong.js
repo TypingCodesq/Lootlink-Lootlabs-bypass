@@ -2,10 +2,9 @@ import puppeteer from 'puppeteer';
 import WebSocket from 'ws';
 import chalk from 'chalk';
 
+// config
 const UA =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'; // headers uwu
-
-// config
 const MAX_WAIT = 99_000;
 const POLL = 20;
 const HB = 30_000;
@@ -20,7 +19,7 @@ const log = (tag, msg, ...args) => console.log(chalk.dim(`[${tag}]`), msg, ...ar
 
 const host = (url) => {
   try { return new URL(url).hostname; } 
-  catch { return 'loot-link.com'; } // uwu
+  catch { return 'loot-link.com'; } // retarded return
 };
 
 const isUrl = (s) => /^https?:\/\//i.test(String(s ?? '').trim()); // check 
@@ -56,7 +55,7 @@ const scrape = (html) => {
   if (!d.tid || !d.key) log('scrape', chalk.yellow('Incomplete params'), JSON.stringify(d));
   return d;
 };
-
+// nigga
 const xor = (enc, len) => {
   const raw = Buffer.from(fixB64(enc), 'base64').toString('utf-8');
   const key = raw.slice(0, len);
@@ -86,12 +85,12 @@ const decode = (raw) => {
   log('decode', `Payload ${s.length} chars`);
 
   const d = safeDec(s);
-  if (isUrl(d)) { log('decode', chalk.green('direct hit'), d); return d; }
+  if (isUrl(d)) { log('decode', chalk.green('ok'), d); return d; }
 
   try {
     const p = Buffer.from(fixB64(s), 'base64').toString('utf-8');
     const hit = firstUrl(p, safeDec(p));
-    if (hit) { log('decode', chalk.green('b64 hit'), hit); return hit; }
+    if (hit) { log('decode', chalk.green('b64 ok'), hit); return hit; }
   } catch {}
 
   const x = tryXor(s, 'raw') ?? tryXor(safeDec(s), 'decoded');
@@ -132,7 +131,7 @@ const fire = (uid, tid, t, sid, d, h) => {
     { url: `https://${sub}.onsultingco.com/p?uid=${uid}`, method: 'POST', headers: hd },
     { url: `https://${syn}/td?ac=auto_complete&urid=${uid}&cat=${tid}&tid=${t}`, method: 'GET', headers: hd },
     { url: `https://enaightdecipie.com/?event=unlock_content_click&session_id=${sid}`, method: 'POST', headers: hd },
-  ]; // urls uwu
+  ]; // urls
 
   reqs.forEach(({ url, method, headers, body }) => {
     fetch(url, { method, headers, body, keepalive: true })
@@ -233,7 +232,7 @@ class Resolver {
     if (this.url || this.busy) return;
     const u = resp.url();
     if (!u.includes('/tc') || resp.request().method() !== 'POST') return;
-    log('resp', '/tc POST detected');
+    log('resp', '/tc'); // blblbl /tc
 
     const ct = resp.headers()['content-type'] || '';
     if (!ct.includes('application/json')) { log('resp', chalk.red('Not JSON')); return; }
@@ -271,7 +270,7 @@ class Resolver {
   }
 
   async go(link) {
-    if (!link) { log('err', chalk.red('No link provided')); return null; }
+    if (!link) { log('err', chalk.red('link????r[]we[pkfgdr')); return null; }
 
     this.url = null;
     this.busy = false;
@@ -307,10 +306,10 @@ class Resolver {
 const r = new Resolver();
 r.go('https://rapid-links.com/s?HiW6incB').then((u) => {
   if (u) console.log(chalk.bgGreen.black('[OUT]'), u);
-});
+}); // nigga
 
 // example link with lootlink: https://links.lootlabs.gg/s?UvQO6IEp&data=BKLXBOPVcyptATUon%2BS6z57I8yM2EmTH4n7aeg656NWWox1unkG5zy9JBKRgaDdt&redirect=javascript:eval(decodeURI(atob(%22bG9jYXRpb24ucmVwbGFjZShsb2NhdGlvbi5vcmlnaW4lMjArJTIwbG9jYXRpb24ucGF0aG5hbWUlMjArJTIwbG9jYXRpb24uc2VhcmNoLnNwbGl0KCcmJyklNUIwJTVEJTIwKyUyMCcmZGF0YT1CS0xYQk9QVmN5cHRBVFVvbiUyNTJCUzZ6NEY5azVJYy8xRXJsdEs0dG82dms0dyUyNTNEJyk7%22)));
 
 // credits to TypingCodesq (https://github.com/TypingCodesq)
 
-// skid it and kys 
+// skid it and kys
