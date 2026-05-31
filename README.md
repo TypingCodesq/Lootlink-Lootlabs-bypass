@@ -9,7 +9,10 @@ time: 60s-70s max, idk
 
 --
 
-JavaScript <--
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
+
+</div>
 ______________________
 
 ```bash
